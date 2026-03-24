@@ -18,7 +18,7 @@ module ApplicationCable
     def find_verified_user
       # Try to find user from JWT token in query params or cookies
       token = extract_token_from_params || extract_token_from_cookie
-      
+
       if token.present?
         payload = JwtService.decode(token)
         if payload && payload[:user_id]

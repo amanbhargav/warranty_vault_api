@@ -13,11 +13,11 @@ class NotificationChannel < ApplicationCable::Channel
 
   # Handle marking notification as read
   def mark_as_read(data)
-    notification_id = data['notification_id']
-    
+    notification_id = data["notification_id"]
+
     if notification_id.present?
       result = NotificationService.mark_as_read(notification_id, current_user)
-      
+
       if result[:success]
         # Broadcast updated unread count
         broadcast_unread_count
@@ -31,7 +31,7 @@ class NotificationChannel < ApplicationCable::Channel
   # Handle marking all notifications as read
   def mark_all_read
     result = NotificationService.mark_all_as_read(current_user)
-    
+
     if result[:success]
       # Broadcast updated unread count
       broadcast_unread_count
@@ -44,9 +44,9 @@ class NotificationChannel < ApplicationCable::Channel
   # Handle fetching unread count
   def fetch_unread_count
     count = NotificationService.unread_count(current_user)
-    
+
     transmit({
-      type: 'unread_count_update',
+      type: "unread_count_update",
       unread_count: count,
       timestamp: Time.current.iso8601
     })
@@ -56,7 +56,7 @@ class NotificationChannel < ApplicationCable::Channel
 
   def broadcast_unread_count
     count = NotificationService.unread_count(current_user)
-    
+
     ActionCable.server.broadcast(
       "user_#{current_user.id}_notifications",
       {

@@ -79,7 +79,7 @@ gem "sidekiq"
 gem "sidekiq-cron"
 
 # Environment variables
-gem "dotenv-rails", groups: [:development, :test]
+gem "dotenv-rails", groups: [ :development, :test ]
 
 gem "pry"
 
