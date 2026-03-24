@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 8.0.4"
+gem "rails", "~> 8.1.2"
 # Use postgresql as database for Active Record
 gem "pg", "~> 1.1"
 # Use Puma web server [https://github.com/puma/puma]
