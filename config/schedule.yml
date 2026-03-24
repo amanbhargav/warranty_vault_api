@@ -1,0 +1,39 @@
+# Sidekiq-Cron schedule configuration
+# These jobs are loaded by the Sidekiq initializer on application boot
+
+daily_reminder_emails:
+  cron: "0 12 * * *"  # Every day at 12:00 PM UTC
+  class: "DailyReminderJob"
+  queue: daily_reminders
+  description: "Send daily reminder emails to verified users"
+
+warranty_reminder_check:
+  cron: "0 9 * * *"  # Every day at 9:00 AM UTC
+  class: "WarrantySchedulerJob"
+  queue: default
+  description: "Daily warranty reminder check - finds warranties expiring in 30 days"
+
+file_cleanup:
+  cron: "0 2 * * 0"  # Every Sunday at 2:00 AM UTC
+  class: "FileCleanupJob"
+  queue: default
+  description: "Weekly cleanup of temporary files"
+
+product_refresh:
+  cron: "0 1 1 * *"  # 1st of every month at 1:00 AM UTC
+  class: "ProductRefreshJob"
+  queue: default
+  description: "Monthly product data refresh"
+
+# Cleanup jobs
+cleanup_expired_tokens:
+  cron: "0 */6 * * *"  # Every 6 hours
+  class: "TokenCleanupJob"
+  queue: maintenance
+  description: "Clean up expired verification tokens"
+
+cleanup_old_notifications:
+  cron: "0 3 * * *"  # Every day at 3:00 AM UTC
+  class: "NotificationCleanupJob"
+  queue: maintenance
+  description: "Clean up old notifications (older than 30 days)"

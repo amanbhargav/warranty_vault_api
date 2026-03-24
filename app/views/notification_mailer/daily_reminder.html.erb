@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Warranty Check - <%= Date.current.strftime('%B %d, %Y') %></title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+    .container {
+      background-color: white;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2563eb;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin: 25px 0;
+    }
+    .stat {
+      text-align: center;
+      padding: 15px;
+      border-radius: 6px;
+    }
+    .stat.active {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+    .stat.expiring {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+    .stat.expired {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .stat-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .button {
+      display: inline-block;
+      background-color: #2563eb;
+      color: white;
+      padding: 12px 30px;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      margin: 10px 5px;
+    }
+    .button:hover {
+      background-color: #1d4ed8;
+    }
+    .button-secondary {
+      background-color: #6b7280;
+    }
+    .button-secondary:hover {
+      background-color: #4b5563;
+    }
+    .footer {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+      color: #6b7280;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">🛡️ Warranty Vault</div>
+    </div>
+    
+    <h2>Your Daily Warranty Summary</h2>
+    
+    <p>Hi <%= @user.first_name || @user.email.split('@').first %>,</p>
+    
+    <p>Here's your warranty status for <%= Date.current.strftime('%B %d, %Y') %>:</p>
+    
+    <div class="stats">
+      <div class="stat active">
+        <div class="stat-number"><%= @active_warranties %></div>
+        <div class="stat-label">Active</div>
+      </div>
+      <div class="stat expiring">
+        <div class="stat-number"><%= @expiring_soon %></div>
+        <div class="stat-label">Expiring Soon</div>
+      </div>
+      <div class="stat expired">
+        <div class="stat-number"><%= @expired %></div>
+        <div class="stat-label">Expired</div>
+      </div>
+    </div>
+    
+    <h3>Quick Actions</h3>
+    
+    <div style="text-align: center;">
+      <a href="<%= @dashboard_url %>" class="button">View Dashboard</a>
+      <a href="<%= @upload_url %>" class="button button-secondary">Upload New Invoice</a>
+    </div>
+    
+    <p>We are here to keep your expensive product invoice and track warranty.</p>
+    
+    <div class="footer">
+      <p>© 2024 Warranty Vault. All rights reserved.</p>
+      <p><a href="#" style="color: #6b7280;">Unsubscribe</a> | <a href="#" style="color: #6b7280;">Manage Preferences</a></p>
+    </div>
+  </div>
+</body>
+</html>

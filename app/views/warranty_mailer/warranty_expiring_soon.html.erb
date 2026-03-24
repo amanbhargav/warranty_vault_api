@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .header {
+        text-align: center;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e0e0e0;
+        margin-bottom: 20px;
+      }
+      .header h1 {
+        color: #2563eb;
+        margin: 0;
+        font-size: 24px;
+      }
+      .alert-box {
+        background-color: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+      .alert-box.urgent {
+        background-color: #fee2e2;
+        border-left-color: #ef4444;
+      }
+      .alert-box.expired {
+        background-color: #fee2e2;
+        border-left-color: #dc2626;
+      }
+      .product-info {
+        background-color: #f9fafb;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 20px 0;
+      }
+      .product-info h2 {
+        margin: 0 0 10px 0;
+        color: #1f2937;
+        font-size: 18px;
+      }
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .info-row:last-child {
+        border-bottom: none;
+      }
+      .info-label {
+        color: #6b7280;
+        font-weight: 500;
+      }
+      .info-value {
+        color: #1f2937;
+        font-weight: 600;
+      }
+      .cta-button {
+        display: inline-block;
+        background-color: #2563eb;
+        color: #ffffff;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        margin-top: 20px;
+        font-weight: 600;
+        text-align: center;
+      }
+      .cta-button:hover {
+        background-color: #1d4ed8;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+        color: #9ca3af;
+        font-size: 14px;
+      }
+      .warranty-badge {
+        display: inline-block;
+        background-color: #dbeafe;
+        color: #1e40af;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1><%= @company_name %></h1>
+        <p>Warranty Expiration Reminder</p>
+      </div>
+
+      <% if @days_remaining <= 0 %>
+        <div class="alert-box expired">
+          <strong>⚠️ Warranty Expired</strong>
+          <p>Your <%= @warranty.component_display_name %> warranty for <%= @invoice.product_name %> has expired.</p>
+        </div>
+      <% elsif @days_remaining <= 7 %>
+        <div class="alert-box urgent">
+          <strong>⚠️ Urgent: Expires in <%= @days_remaining %> days</strong>
+          <p>Your <%= @warranty.component_display_name %> warranty will expire very soon!</p>
+        </div>
+      <% elsif @days_remaining <= 30 %>
+        <div class="alert-box">
+          <strong>📅 Expires in <%= @days_remaining %> days</strong>
+          <p>Your <%= @warranty.component_display_name %> warranty will expire on <strong><%= @warranty.expires_at.strftime('%B %d, %Y') %></strong>.</p>
+        </div>
+      <% else %>
+        <div class="alert-box">
+          <strong>📅 Upcoming Expiration</strong>
+          <p>Your <%= @warranty.component_display_name %> warranty will expire in approximately <%= (@days_remaining / 30).to_i %> months.</p>
+        </div>
+      <% end %>
+
+      <div class="product-info">
+        <h2><%= @invoice.product_name %></h2>
+        
+        <div class="info-row">
+          <span class="info-label">Brand</span>
+          <span class="info-value"><%= @invoice.brand || 'N/A' %></span>
+        </div>
+        
+        <div class="info-row">
+          <span class="info-label">Component</span>
+          <span class="info-value"><%= @warranty.component_display_name %></span>
+        </div>
+        
+        <div class="info-row">
+          <span class="info-label">Warranty Duration</span>
+          <span class="info-value"><%= @warranty.formatted_duration %></span>
+        </div>
+        
+        <div class="info-row">
+          <span class="info-label">Purchase Date</span>
+          <span class="info-value"><%= @invoice.purchase_date&.strftime('%B %d, %Y') || 'N/A' %></span>
+        </div>
+        
+        <div class="info-row">
+          <span class="info-label">Expires On</span>
+          <span class="info-value"><%= @warranty.expires_at.strftime('%B %d, %Y') %></span>
+        </div>
+        
+        <% if @days_remaining > 0 %>
+          <div class="info-row">
+            <span class="info-label">Days Remaining</span>
+            <span class="info-value" style="color: <%= @days_remaining <= 7 ? '#dc2626' : (@days_remaining <= 30 ? '#f59e0b' : '#059669') %>">
+              <%= @days_remaining %> days
+            </span>
+          </div>
+        <% end %>
+        
+        <span class="warranty-badge">
+          <%= @warranty.expires_at > Date.current ? 'Active' : 'Expired' %> Warranty
+        </span>
+      </div>
+
+      <div style="text-align: center;">
+        <a href="<%= ENV.fetch('FRONTEND_URL', 'http://localhost:3006') %>/invoices/<%= @invoice.id %>" class="cta-button">
+          View Invoice Details
+        </a>
+      </div>
+
+      <div class="footer">
+        <p>This is an automated reminder from <%= @company_name %>.</p>
+        <p>© <%= Date.current.year %> <%= @company_name %>. All rights reserved.</p>
+        <p>
+          <a href="<%= ENV.fetch('FRONTEND_URL', 'http://localhost:3006') %>/settings">Manage notifications</a> |
+          <a href="<%= ENV.fetch('FRONTEND_URL', 'http://localhost:3006') %>/unsubscribe">Unsubscribe</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
