@@ -1,7 +1,7 @@
 module Api
   module V1
     class InvoicesController < ApplicationController
-      before_action :set_invoice, only: [:show, :update, :destroy, :download, :preview, :retry_ocr, :ocr_status]
+      before_action :set_invoice, only: [ :show, :update, :destroy, :download, :preview, :retry_ocr, :ocr_status ]
 
       # GET /api/v1/invoices
       def index
@@ -70,8 +70,8 @@ module Api
 
         if @invoice.update(invoice_params)
           InvoiceOcrJob.perform_later(@invoice.id) if params[:file].present?
-          
-          render json: { 
+
+          render json: {
             invoice: invoice_data(@invoice),
             message: params[:file].present? ? "Invoice updated and OCR processing started" : "Invoice updated successfully"
           }
@@ -90,12 +90,12 @@ module Api
       def download
         if @invoice.file.attached?
           blob = @invoice.file.blob
-          
+
           # Use send_data for API controllers (send_blob is for full Rails)
           send_data blob.download,
             filename: blob.filename.to_s,
             type: blob.content_type,
-            disposition: 'attachment'
+            disposition: "attachment"
         else
           render json: { error: "No file attached" }, status: :not_found
         end
@@ -106,12 +106,12 @@ module Api
       def preview
         if @invoice.file.attached?
           blob = @invoice.file.blob
-          
+
           # Send inline for browser display
           send_data blob.download,
             filename: blob.filename.to_s,
             type: blob.content_type,
-            disposition: 'inline'  # Inline displays in browser instead of downloading
+            disposition: "inline"  # Inline displays in browser instead of downloading
         else
           render json: { error: "No file attached" }, status: :not_found
         end
@@ -285,7 +285,7 @@ module Api
               formatted_duration: pw.formatted_duration,
               expires_at:       pw.expires_at,
               days_remaining:   pw.days_remaining,
-              status:           pw.active? ? 'active' : (pw.expired? ? 'expired' : 'expiring_soon'),
+              status:           pw.active? ? "active" : (pw.expired? ? "expired" : "expiring_soon"),
               reminder_sent:    pw.reminder_sent
             }
           end

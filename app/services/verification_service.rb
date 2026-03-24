@@ -17,12 +17,12 @@ class VerificationService
     def generate_verification_token(user)
       token = generate_token
       hashed_token = hash_token(token)
-      
+
       user.update_columns(
         verification_token: hashed_token,
         verification_sent_at: Time.current
       )
-      
+
       Rails.logger.info "[VerificationService] Generated verification token for user #{user.id}"
       token # Return unhashed token for email
     end
@@ -81,15 +81,15 @@ class VerificationService
       # Check resend cooldown
       if resend_cooldown_active?(user)
         wait_time = RESEND_COOLDOWN_MINUTES - minutes_since_last_email(user)
-        return { 
-          success: false, 
-          error: "Please wait #{wait_time.ceil} minutes before requesting another verification email" 
+        return {
+          success: false,
+          error: "Please wait #{wait_time.ceil} minutes before requesting another verification email"
         }
       end
 
       # Generate new token and send email
       generate_verification_token(user)
-      
+
       if EmailService.send_verification_email(user)
         { success: true, message: "Verification email sent" }
       else
@@ -101,7 +101,7 @@ class VerificationService
     def can_login?(user)
       return false unless user
       return false unless user.email_verified?
-      
+
       true
     end
 
@@ -118,11 +118,11 @@ class VerificationService
           token_sent_at: user.verification_sent_at,
           expired: user.verification_sent_at ? token_expired?(user) : nil
         }
-        
+
         if status[:expired]
           status[:error] = "Verification token expired"
         end
-        
+
         status
       end
     end
@@ -130,14 +130,14 @@ class VerificationService
     # Clean up expired tokens (run periodically)
     def cleanup_expired_tokens
       expired_users = User.where(
-        'verification_sent_at < ? AND email_verified = ?',
+        "verification_sent_at < ? AND email_verified = ?",
         TOKEN_EXPIRY_HOURS.hours.ago,
         false
       )
 
       count = expired_users.count
       expired_users.update_all(verification_token: nil, verification_sent_at: nil)
-      
+
       Rails.logger.info "[VerificationService] Cleaned up #{count} expired verification tokens"
       count
     end

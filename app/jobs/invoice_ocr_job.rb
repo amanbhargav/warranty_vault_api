@@ -26,9 +26,9 @@ class InvoiceOcrJob < ApplicationJob
     invoice = Invoice.find_by(id: invoice_id)
     return unless invoice
 
-    primary_service = ENV.fetch('PRIMARY_AI_SERVICE', 'gemini')
-    fallback_service = ENV.fetch('FALLBACK_AI_SERVICE', 'openai')
-    
+    primary_service = ENV.fetch("PRIMARY_AI_SERVICE", "gemini")
+    fallback_service = ENV.fetch("FALLBACK_AI_SERVICE", "openai")
+
     Rails.logger.info "[InvoiceOcrJob] Starting AI processing for invoice #{invoice_id}"
     Rails.logger.info "[InvoiceOcrJob] Primary AI service: #{primary_service}"
     Rails.logger.info "[InvoiceOcrJob] Fallback AI service: #{fallback_service}"
@@ -72,15 +72,15 @@ class InvoiceOcrJob < ApplicationJob
   # Process invoice with AI Service Manager
   def process_with_ai_manager(invoice)
     Rails.logger.info "[InvoiceOcrJob] Using AI Service Manager for invoice #{invoice.id}"
-    
+
     result = AiServiceManager.process_invoice(invoice)
-    
+
     # Add service information to result
     if result[:success]
-      result[:ai_service] = ENV.fetch('PRIMARY_AI_SERVICE', 'gemini')
+      result[:ai_service] = ENV.fetch("PRIMARY_AI_SERVICE", "gemini")
       result[:ai_model] = get_current_ai_model
     end
-    
+
     result
   end
 
@@ -90,7 +90,7 @@ class InvoiceOcrJob < ApplicationJob
       ocr_status: :failed,
       ocr_error_message: error_message
     )
-    
+
     # Send notification
     Notification.ocr_failed_notification(invoice.user, invoice, error_message)
   end
@@ -109,15 +109,15 @@ class InvoiceOcrJob < ApplicationJob
 
   # Get current AI model being used
   def get_current_ai_model
-    service = ENV.fetch('PRIMARY_AI_SERVICE', 'gemini')
-    
+    service = ENV.fetch("PRIMARY_AI_SERVICE", "gemini")
+
     case service
-    when 'gemini'
-      ENV.fetch('GEMINI_MODEL', 'gemini-1.5-flash')
-    when 'openai'
-      ENV.fetch('OPENAI_MODEL', 'gpt-4o-mini')
+    when "gemini"
+      ENV.fetch("GEMINI_MODEL", "gemini-1.5-flash")
+    when "openai"
+      ENV.fetch("OPENAI_MODEL", "gpt-4o-mini")
     else
-      'unknown'
+      "unknown"
     end
   end
 end

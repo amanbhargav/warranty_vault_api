@@ -34,8 +34,8 @@ module Api
         if user&.authenticate(params[:password])
           # Check if email is verified
           unless user.can_login?
-            return render json: { 
-              error: "Please verify your email before logging in. Check your inbox for the verification link." 
+            return render json: {
+              error: "Please verify your email before logging in. Check your inbox for the verification link."
             }, status: :unauthorized
           end
 
@@ -130,7 +130,7 @@ module Api
         set_auth_cookie(token)
         NotificationService.create_login_notification(user)
         # Pass the token directly to the frontend via URL parameter
-        redirect_to "#{frontend_url}/oauth-callback?token=#{token}", allow_other_host: true
+        redirect_to validated_oauth_callback_url(frontend_url, token), allow_other_host: true
       end
 
       def signup_params
@@ -156,6 +156,32 @@ module Api
         return if payload.blank?
 
         User.find_by(id: payload[:user_id])
+      end
+
+      def validated_oauth_callback_url(frontend_url, token)
+        # Validate frontend_url is a proper URL and not malicious
+        uri = URI.parse(frontend_url)
+
+        # Only allow http and https schemes
+        raise ArgumentError, "Invalid URL scheme" unless %w[http https].include?(uri.scheme)
+
+        # Allow common frontend ports to prevent port-based attacks
+        allowed_ports = [ 80, 443, 3000, 3001, 3006, 8000, 8080, 8081 ]
+        if uri.port && !allowed_ports.include?(uri.port)
+          raise ArgumentError, "Invalid port"
+        end
+
+        # Prevent open redirect through malformed URLs
+        if uri.path.include?("../") || uri.path.include?("%2e%2e")
+          raise ArgumentError, "Invalid path"
+        end
+
+        # Construct safe callback URL
+        "#{uri.scheme}://#{uri.host}#{uri.port ? ":#{uri.port}" : ""}/oauth-callback?token=#{Rack::Utils.escape(token)}"
+      rescue URI::InvalidURIError, ArgumentError => e
+        Rails.logger.error "[OAuth] Invalid redirect URL: #{e.message}"
+        # Fallback to safe default URL
+        "#{ENV.fetch('FRONTEND_URL', 'http://localhost:3006')}/oauth-callback?token=#{Rack::Utils.escape(token)}"
       end
     end
   end

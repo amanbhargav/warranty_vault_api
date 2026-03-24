@@ -2,7 +2,7 @@
 # Handles upload -> OCR -> product lookup -> warranty calculation -> storage
 class Api::V1::InvoicesWorkflowController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_invoice, only: [:show, :update, :destroy]
+  before_action :set_invoice, only: [ :show, :update, :destroy ]
 
   # POST /api/v1/invoices_workflow/upload_and_process
   # Complete workflow: Upload -> OCR -> Enrichment -> Warranty calculation
@@ -98,7 +98,7 @@ class Api::V1::InvoicesWorkflowController < ApplicationController
       progress: progress,
       time_elapsed: time_elapsed.round(1),
       estimated_total: estimated_total,
-      estimated_remaining: [estimated_total - time_elapsed, 0].max.round(1)
+      estimated_remaining: [ estimated_total - time_elapsed, 0 ].max.round(1)
     }
 
     render json: {

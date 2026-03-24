@@ -16,7 +16,7 @@ class CreateProductWarranties < ActiveRecord::Migration[8.0]
     # Indexes for efficient queries
     add_index :product_warranties, :expires_at
     add_index :product_warranties, :component_name
-    add_index :product_warranties, [:invoice_id, :component_name], unique: true
-    add_index :product_warranties, [:expires_at, :reminder_sent] # For scheduled jobs
+    add_index :product_warranties, [ :invoice_id, :component_name ], unique: true
+    add_index :product_warranties, [ :expires_at, :reminder_sent ] # For scheduled jobs
   end
 end

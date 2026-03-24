@@ -22,8 +22,8 @@ class AiServiceManager
 
   # Available services
   AVAILABLE_SERVICES = {
-    'gemini' => GeminiInvoiceScanner,
-    'openai' => OpenAiInvoiceScanner
+    "gemini" => GeminiInvoiceScanner,
+    "openai" => OpenAiInvoiceScanner
   }.freeze
 
   # Service health tracking
@@ -35,38 +35,38 @@ class AiServiceManager
     def process_invoice(invoice)
       service_name = select_service
       service_class = AVAILABLE_SERVICES[service_name]
-      
+
       Rails.logger.info "[AiServiceManager] Using #{service_name} for invoice #{invoice.id}"
-      
+
       begin
         result = service_class.new(invoice).process
-        
+
         if result[:success]
           record_service_success(service_name)
-          return result
+          result
         else
           Rails.logger.warn "[AiServiceManager] #{service_name} reported failure: #{result[:error]}"
-          
+
           # Try fallback service on failure
           if service_name != FALLBACK_SERVICE
             Rails.logger.info "[AiServiceManager] Falling back to #{FALLBACK_SERVICE} due to result failure"
-            return try_fallback_service(invoice)
+            try_fallback_service(invoice)
           else
             record_service_failure(service_name, StandardError.new(result[:error]))
-            return result
+            result
           end
         end
       rescue => e
         Rails.logger.warn "[AiServiceManager] #{service_name} raised error: #{e.message}"
         record_service_failure(service_name, e)
-        
+
         # Try fallback service on raised exception
         if service_name != FALLBACK_SERVICE
           Rails.logger.info "[AiServiceManager] Falling back to #{FALLBACK_SERVICE}"
-          return try_fallback_service(invoice)
+          try_fallback_service(invoice)
         else
           Rails.logger.error "[AiServiceManager] All AI services failed for invoice #{invoice.id}"
-          return { success: false, error: "All AI services failed: #{e.message}" }
+          { success: false, error: "All AI services failed: #{e.message}" }
         end
       end
     end
@@ -75,10 +75,10 @@ class AiServiceManager
     def extract_from_text(text)
       service_name = select_service
       service_class = AVAILABLE_SERVICES[service_name]
-      
+
       # Create a temporary invoice object for text processing
-      temp_invoice = OpenStruct.new(id: 'temp', file: nil)
-      
+      temp_invoice = OpenStruct.new(id: "temp", file: nil)
+
       begin
         # Use the service's text extraction capabilities
         if service_class.respond_to?(:scan_text)
@@ -87,32 +87,32 @@ class AiServiceManager
           # Fallback to processing with mock invoice
           result = service_class.new(temp_invoice).send(:extract_structured_data, text)
         end
-        
+
         if result[:success]
           record_service_success(service_name)
-          return result
+          result
         else
           Rails.logger.warn "[AiServiceManager] #{service_name} reported failure: #{result[:error]}"
-          
+
           if service_name != FALLBACK_SERVICE
             Rails.logger.info "[AiServiceManager] Falling back to #{FALLBACK_SERVICE} for text extraction"
-            return try_fallback_text_extraction(text)
+            try_fallback_text_extraction(text)
           else
             record_service_failure(service_name, StandardError.new(result[:error]))
-            return result
+            result
           end
         end
       rescue => e
         Rails.logger.warn "[AiServiceManager] #{service_name} text extraction failed: #{e.message}"
         record_service_failure(service_name, e)
-        
+
         # Try fallback service
         if service_name != FALLBACK_SERVICE
           Rails.logger.info "[AiServiceManager] Falling back to #{FALLBACK_SERVICE} for text extraction"
-          return try_fallback_text_extraction(text)
+          try_fallback_text_extraction(text)
         else
           Rails.logger.error "[AiServiceManager] All AI services failed for text extraction"
-          return { success: false, error: "All AI services failed: #{e.message}" }
+          { success: false, error: "All AI services failed: #{e.message}" }
         end
       end
     end
@@ -129,13 +129,13 @@ class AiServiceManager
             model: Rails.application.config.ai_services.gemini_model,
             temperature: Rails.application.config.ai_services.gemini_temperature,
             max_tokens: Rails.application.config.ai_services.gemini_max_tokens,
-            api_key_present: ENV['GEMINI_API_KEY'].present?
+            api_key_present: ENV["GEMINI_API_KEY"].present?
           },
           openai: {
             model: Rails.application.config.ai_services.openai_model,
             temperature: Rails.application.config.ai_services.openai_temperature,
             max_tokens: Rails.application.config.ai_services.openai_max_tokens,
-            api_key_present: ENV['OPENAI_API_KEY'].present?
+            api_key_present: ENV["OPENAI_API_KEY"].present?
           }
         }
       }
@@ -148,44 +148,44 @@ class AiServiceManager
           # Try to initialize the service
           service_class.new(nil)
           model = case service_name
-                  when 'gemini'
+          when "gemini"
                     Rails.application.config.ai_services.gemini_model
-                  when 'openai'
+          when "openai"
                     Rails.application.config.ai_services.openai_model
-                  else
-                    'unknown'
-                  end
+          else
+                    "unknown"
+          end
           @service_health[service_name] = {
-            status: 'healthy',
+            status: "healthy",
             last_check: Time.current,
             error: nil,
             model: model
           }
         rescue => e
           @service_health[service_name] = {
-            status: 'unhealthy',
+            status: "unhealthy",
             last_check: Time.current,
             error: e.message
           }
         end
       end
-      
+
       @service_health
     end
 
     # Force use of specific service
     def with_service(service_name)
       return yield unless AVAILABLE_SERVICES.key?(service_name)
-      
+
       original_primary = PRIMARY_SERVICE
-      ENV['PRIMARY_AI_SERVICE'] = service_name
-      
+      ENV["PRIMARY_AI_SERVICE"] = service_name
+
       begin
         result = yield
-        ENV['PRIMARY_AI_SERVICE'] = original_primary
-        return result
+        ENV["PRIMARY_AI_SERVICE"] = original_primary
+        result
       rescue => e
-        ENV['PRIMARY_AI_SERVICE'] = original_primary
+        ENV["PRIMARY_AI_SERVICE"] = original_primary
         raise e
       end
     end
@@ -193,14 +193,14 @@ class AiServiceManager
     # Get current AI model being used
     def get_current_ai_model
       service = PRIMARY_SERVICE
-      
+
       case service
-      when 'gemini'
+      when "gemini"
         Rails.application.config.ai_services.gemini_model
-      when 'openai'
+      when "openai"
         Rails.application.config.ai_services.openai_model
       else
-        'unknown'
+        "unknown"
       end
     end
 
@@ -210,19 +210,19 @@ class AiServiceManager
     def select_service
       # Check if primary service is healthy
       primary_health = @service_health[PRIMARY_SERVICE]
-      
-      if primary_health && primary_health[:status] == 'healthy'
+
+      if primary_health && primary_health[:status] == "healthy"
         return PRIMARY_SERVICE
       end
-      
+
       # Check fallback service
       fallback_health = @service_health[FALLBACK_SERVICE]
-      
-      if fallback_health && fallback_health[:status] == 'healthy'
+
+      if fallback_health && fallback_health[:status] == "healthy"
         Rails.logger.warn "[AiServiceManager] Primary service unhealthy, using fallback: #{FALLBACK_SERVICE}"
         return FALLBACK_SERVICE
       end
-      
+
       # Default to primary service
       PRIMARY_SERVICE
     end
@@ -230,7 +230,7 @@ class AiServiceManager
     # Try fallback service for invoice processing
     def try_fallback_service(invoice)
       fallback_class = AVAILABLE_SERVICES[FALLBACK_SERVICE]
-      
+
       begin
         result = fallback_class.new(invoice).process
         if result[:success]
@@ -238,43 +238,43 @@ class AiServiceManager
         else
           record_service_failure(FALLBACK_SERVICE, StandardError.new(result[:error]))
         end
-        return result
+        result
       rescue => e
         Rails.logger.error "[AiServiceManager] Fallback service #{FALLBACK_SERVICE} also failed: #{e.message}"
         record_service_failure(FALLBACK_SERVICE, e)
-        return { success: false, error: "Fallback service failed: #{e.message}" }
+        { success: false, error: "Fallback service failed: #{e.message}" }
       end
     end
 
     # Try fallback service for text extraction
     def try_fallback_text_extraction(text)
       fallback_class = AVAILABLE_SERVICES[FALLBACK_SERVICE]
-      
+
       begin
         if fallback_class.respond_to?(:scan_text)
           result = fallback_class.scan_text(text)
         else
-          temp_invoice = OpenStruct.new(id: 'temp', file: nil)
+          temp_invoice = OpenStruct.new(id: "temp", file: nil)
           result = fallback_class.new(temp_invoice).send(:extract_structured_data, text)
         end
-        
+
         if result[:success]
           record_service_success(FALLBACK_SERVICE)
         else
           record_service_failure(FALLBACK_SERVICE, StandardError.new(result[:error]))
         end
-        return result
+        result
       rescue => e
         Rails.logger.error "[AiServiceManager] Fallback text extraction failed: #{e.message}"
         record_service_failure(FALLBACK_SERVICE, e)
-        return { success: false, error: "Fallback text extraction failed: #{e.message}" }
+        { success: false, error: "Fallback text extraction failed: #{e.message}" }
       end
     end
 
     # Record successful service usage
     def record_service_success(service_name)
       @service_health[service_name] = {
-        status: 'healthy',
+        status: "healthy",
         last_check: Time.current,
         last_success: Time.current,
         error: nil
@@ -284,7 +284,7 @@ class AiServiceManager
     # Record service failure
     def record_service_failure(service_name, error)
       @service_health[service_name] = {
-        status: 'unhealthy',
+        status: "unhealthy",
         last_check: Time.current,
         last_failure: Time.current,
         error: error.message

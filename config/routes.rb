@@ -3,7 +3,7 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   # Mount ActionCable server
-  mount ActionCable.server => '/cable'
+  mount ActionCable.server => "/cable"
 
   # Google OAuth routes (must be at root level for OmniAuth middleware)
   # /auth/google -> google_login action -> redirects to /auth/google_oauth2 (OmniAuth)
@@ -48,9 +48,9 @@ Rails.application.routes.draw do
           get :stats
           get :dashboard
         end
-        
+
         # Product image nested routes
-        resources :product_images, only: [:show, :create], controller: 'product_images' do
+        resources :product_images, only: [ :show, :create ], controller: "product_images" do
           member do
             post :refresh
             get :status
@@ -70,7 +70,7 @@ Rails.application.routes.draw do
       end
 
       # Product enrichment (image + description from free APIs)
-      resources :products, only: [:index, :show] do
+      resources :products, only: [ :index, :show ] do
         collection do
           get :enrich
           get :search
@@ -86,7 +86,7 @@ Rails.application.routes.draw do
       get "products/support/:brand", to: "products#support_info", as: :product_support
 
       # Warranties
-      resources :warranties, only: [:index, :show] do
+      resources :warranties, only: [ :index, :show ] do
         collection do
           get :expiring
           get :stats
@@ -98,7 +98,7 @@ Rails.application.routes.draw do
       end
 
       # Notifications
-      resources :notifications, only: [:index, :show, :destroy] do
+      resources :notifications, only: [ :index, :show, :destroy ] do
         member do
           put :mark_as_read
           post :dismiss

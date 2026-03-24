@@ -9,19 +9,19 @@ Rails.application.config.middleware.use OmniAuth::Builder do
              # Request email, profile, and Gmail access
              scope: "email,profile,https://www.googleapis.com/auth/gmail.readonly",
              redirect_uri: ENV.fetch("GOOGLE_REDIRECT_URI", nil),
-             callback_path: '/auth/google/callback',
+             callback_path: "/auth/google/callback",
              access_type: "offline",  # Get refresh token
              prompt: "consent select_account",  # Force consent screen
              include_granted_scopes: true,
              # SSL settings for development
-             ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE,
+             ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE
              # Important for API-only Rails apps - disables CSRF state check
              # provider_ignores_state: true
            }
 end
 
 # Security: Only allow GET and POST for OAuth callbacks
-OmniAuth.config.allowed_request_methods = [:get, :post]
+OmniAuth.config.allowed_request_methods = [ :get, :post ]
 
 # Suppress warnings about GET requests (we explicitly allow them above)
 OmniAuth.config.silence_get_warning = true
@@ -37,5 +37,5 @@ OmniAuth.config.on_failure = proc do |env|
   Rails.logger.warn "[OmniAuth] Full env dump: #{env.select { |k, v| k.to_s.include?('omniauth') }.inspect}"
 
   frontend_url = ENV.fetch("FRONTEND_URL", "http://localhost:3006")
-  [302, {"Location" => "#{frontend_url}/login?error=#{message_key}"}, []]
+  [ 302, { "Location" => "#{frontend_url}/login?error=#{message_key}" }, [] ]
 end

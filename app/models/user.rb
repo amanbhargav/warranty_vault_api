@@ -17,7 +17,7 @@ class User < ApplicationRecord
   before_save :downcase_email
 
   # Email verification methods
-  
+
   # Check if user can login (email must be verified)
   def can_login?
     email_verified?
@@ -56,7 +56,7 @@ class User < ApplicationRecord
 
   # Get full name
   def full_name
-    [first_name, last_name].compact.join(" ").presence || email.split("@").first
+    [ first_name, last_name ].compact.join(" ").presence || email.split("@").first
   end
 
   # Get unread notification count

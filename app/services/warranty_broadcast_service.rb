@@ -8,11 +8,11 @@ class WarrantyBroadcastService
       return unless warranty && defined?(ActionCable)
 
       user = warranty.invoice.user
-      
+
       ActionCable.server.broadcast(
         "user_#{user.id}_warranties",
         {
-          type: 'warranty_created',
+          type: "warranty_created",
           warranty: serialize_warranty(warranty),
           timestamp: Time.current.iso8601
         }
@@ -28,11 +28,11 @@ class WarrantyBroadcastService
       return unless warranty && defined?(ActionCable)
 
       user = warranty.invoice.user
-      
+
       ActionCable.server.broadcast(
         "user_#{user.id}_warranties",
         {
-          type: 'warranty_status_update',
+          type: "warranty_status_update",
           warranty_id: warranty.id,
           old_status: old_status,
           new_status: new_status,
@@ -52,11 +52,11 @@ class WarrantyBroadcastService
 
       user = warranty.invoice.user
       days_remaining = warranty.days_remaining || 0
-      
+
       ActionCable.server.broadcast(
         "user_#{user.id}_warranties",
         {
-          type: 'warranty_expiry_alert',
+          type: "warranty_expiry_alert",
           warranty: serialize_warranty(warranty),
           days_remaining: days_remaining,
           urgency: calculate_urgency(days_remaining),
@@ -76,7 +76,7 @@ class WarrantyBroadcastService
       ActionCable.server.broadcast(
         "user_#{user_id}_warranties",
         {
-          type: 'warranty_deleted',
+          type: "warranty_deleted",
           warranty_id: warranty_id,
           timestamp: Time.current.iso8601
         }
@@ -94,7 +94,7 @@ class WarrantyBroadcastService
       ActionCable.server.broadcast(
         "user_#{user.id}_warranties",
         {
-          type: 'bulk_warranty_update',
+          type: "bulk_warranty_update",
           warranties: warranties.map { |w| serialize_warranty(w) },
           count: warranties.count,
           timestamp: Time.current.iso8601
@@ -126,13 +126,13 @@ class WarrantyBroadcastService
     def calculate_urgency(days_remaining)
       case days_remaining
       when 0..7
-        'critical'
+        "critical"
       when 8..30
-        'warning'
+        "warning"
       when 31..90
-        'info'
+        "info"
       else
-        'low'
+        "low"
       end
     end
   end

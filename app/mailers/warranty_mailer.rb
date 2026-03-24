@@ -1,5 +1,5 @@
 # Mailer for warranty-related email notifications
-# 
+#
 # Usage:
 #   WarrantyMailer.with(user:, invoice:, warranty:, days_remaining:).warranty_expiring_soon.deliver_later
 #   WarrantyMailer.with(user:, invoice:, warranty:).warranty_expired.deliver_later

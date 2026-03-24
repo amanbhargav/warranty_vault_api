@@ -126,20 +126,20 @@ class WarrantyParserService
 
     # Map common variations to standard names
     component_mapping = {
-      "product" => ["product", "products", "item", "items", "unit", "goods", " merchandise"],
-      "compressor" => ["compressor", "compressors", "comp"],
-      "battery" => ["battery", "batteries", "batt"],
-      "motor" => ["motor", "motors", "engine", "engines"],
-      "panel" => ["panel", "panels", "display panel", "control panel"],
-      "display" => ["display", "screen", "lcd", "led", "oled"],
-      "pump" => ["pump", "pumps", "water pump", "circulation pump"],
-      "filter" => ["filter", "filters", "air filter", "water filter"],
-      "heating" => ["heating", "heater", "heat exchanger"],
-      "cooling" => ["cooling", "cooler", "coolant"],
-      "electrical" => ["electrical", "electronics", "circuit", "wiring"],
-      "plumbing" => ["plumbing", "pipes", "water system"],
-      "structural" => ["structural", "structure", "frame", "chassis"],
-      "appliance" => ["appliance", "appliances"]
+      "product" => [ "product", "products", "item", "items", "unit", "goods", " merchandise" ],
+      "compressor" => [ "compressor", "compressors", "comp" ],
+      "battery" => [ "battery", "batteries", "batt" ],
+      "motor" => [ "motor", "motors", "engine", "engines" ],
+      "panel" => [ "panel", "panels", "display panel", "control panel" ],
+      "display" => [ "display", "screen", "lcd", "led", "oled" ],
+      "pump" => [ "pump", "pumps", "water pump", "circulation pump" ],
+      "filter" => [ "filter", "filters", "air filter", "water filter" ],
+      "heating" => [ "heating", "heater", "heat exchanger" ],
+      "cooling" => [ "cooling", "cooler", "coolant" ],
+      "electrical" => [ "electrical", "electronics", "circuit", "wiring" ],
+      "plumbing" => [ "plumbing", "pipes", "water system" ],
+      "structural" => [ "structural", "structure", "frame", "chassis" ],
+      "appliance" => [ "appliance", "appliances" ]
     }
 
     component_mapping.each do |standard, variations|

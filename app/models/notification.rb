@@ -1,21 +1,21 @@
 class Notification < ApplicationRecord
   belongs_to :user
 
-  enum :notification_type, { 
-    info: 0, 
-    warning: 1, 
-    success: 2, 
+  enum :notification_type, {
+    info: 0,
+    warning: 1,
+    success: 2,
     error: 3,
-    warranty_expiring: 4, 
-    warranty_expired: 5, 
-    invoice_processed: 6, 
+    warranty_expiring: 4,
+    warranty_expired: 5,
+    invoice_processed: 6,
     ocr_complete: 7,
-    system_update: 8 
+    system_update: 8
   }
 
   validates :title, presence: true
   validates :message, presence: true
-  
+
   # Set default values
   after_initialize :set_defaults, if: :new_record?
 

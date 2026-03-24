@@ -6,12 +6,12 @@ class NotificationCleanupJob < ApplicationJob
 
   def perform(days = 30)
     Rails.logger.info "[NotificationCleanupJob] Starting notification cleanup (older than #{days} days)"
-    
+
     # Clean up old notifications
     cleaned_count = NotificationService.cleanup_old_notifications(days)
-    
+
     Rails.logger.info "[NotificationCleanupJob] Cleaned up #{cleaned_count} old notifications"
-    
+
     # Log to monitoring
     Rails.logger.info "[NotificationCleanupJob] Notification cleanup completed successfully"
   end

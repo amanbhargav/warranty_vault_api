@@ -60,7 +60,7 @@ class NotificationChannel < ApplicationCable::Channel
     ActionCable.server.broadcast(
       "user_#{current_user.id}_notifications",
       {
-        type: 'unread_count_update',
+        type: "unread_count_update",
         unread_count: count,
         timestamp: Time.current.iso8601
       }

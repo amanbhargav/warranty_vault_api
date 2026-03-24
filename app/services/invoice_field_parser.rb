@@ -65,7 +65,7 @@ class InvoiceFieldParser
           label_pos = text.index(match[0])
           sub_text = text[label_pos + match[0].length..-1]
           sub_lines = sub_text.split("\n").map(&:strip).reject(&:blank?).first(10)
-          
+
           collected = []
           sub_lines.each do |l|
             break if looks_like_table_header?(l) || looks_like_charge?(l) || looks_like_address?(l)
@@ -74,7 +74,7 @@ class InvoiceFieldParser
           end
           name = collected.join(" ").strip
         end
-        
+
         name = clean_product_line(name)
         return name if name.present? && !looks_like_address?(name) && !looks_like_charge?(name)
       end
@@ -111,7 +111,7 @@ class InvoiceFieldParser
 
   def clean_product_line(line)
     return nil if line.blank?
-    
+
     # Specific cleanup for Flipkart/Logistics table rows where product name is followed by Qty, Weight, Price
     # e.g., "Samsung 236 L 1.0 53900.0 grams 19290.0"
     if line.match?(/\s+\d+(\.\d+)?\s+\d+(\.\d+)?\s+(grams|kg|ml|l|unit|qty|nos)/i)
@@ -125,10 +125,10 @@ class InvoiceFieldParser
     cleaned = line.dup
     # Remove trailing item counts like (1)
     cleaned = cleaned.gsub(/\s*\(\d+\)\s*$/, "")
-    
+
     # Remove large blocks of spaces followed by numbers (likely table columns)
     cleaned = cleaned.gsub(/\s{3,}\d+.*$/, "")
-    
+
     cleaned.strip
   end
 
@@ -143,15 +143,15 @@ class InvoiceFieldParser
   def looks_like_table_header?(str)
     # Common table headers/titles in invoices to skip for product name
     headers = %w[qty gross amount taxable taxable_value sgst cgst igst tax discount total particulars hsn sac description invoice product_name value weight weight_of price rate unit]
-    titles = ["tax invoice", "bill of supply", "simplified invoice", "credit note", "debit note", "sold by", "ship-to", "bill-to"]
-    
+    titles = [ "tax invoice", "bill of supply", "simplified invoice", "credit note", "debit note", "sold by", "ship-to", "bill-to" ]
+
     down_str = str.downcase.strip
     return true if titles.any? { |t| down_str.include?(t) }
-    
+
     words = down_str.split
     # Catch lines that are just a few words, mostly keywords
     return true if words.any? { |w| %w[qty weight hsn sac igst cgst sgst].include?(w) }
-    
+
     # If the line contains mostly these keywords, it's likely a header
     count = words.count { |w| headers.include?(w) || w.match?(/[\/%\₹\$]/) }
     count > (words.size / 3.0) # More sensitive
@@ -241,17 +241,17 @@ class InvoiceFieldParser
   def extract_purchase_date
     patterns = [
       # EU/India format: 15-01-2024
-      [/(?:date|purchase date|invoice date|order date|sold on)[:\s]*(\d{1,2}-\d{1,2}-\d{2,4})/i, "%d-%m-%Y"],
+      [ /(?:date|purchase date|invoice date|order date|sold on)[:\s]*(\d{1,2}-\d{1,2}-\d{2,4})/i, "%d-%m-%Y" ],
       # ISO format: 2024-01-15
-      [/(?:date|purchase date|invoice date|order date|sold on)[:\s]*(\d{4}-\d{2}-\d{2})/i, "%Y-%m-%d"],
+      [ /(?:date|purchase date|invoice date|order date|sold on)[:\s]*(\d{4}-\d{2}-\d{2})/i, "%Y-%m-%d" ],
       # US format: 01/15/2024 or 1/15/2024
-      [/(?:date|purchase date|invoice date|order date)[:\s]*(\d{1,2}\/\d{1,2}\/\d{2,4})/i, "%m/%d/%Y"],
+      [ /(?:date|purchase date|invoice date|order date)[:\s]*(\d{1,2}\/\d{1,2}\/\d{2,4})/i, "%m/%d/%Y" ],
       # EU format: 15/01/2024
-      [/(?:date|purchase date|invoice date|order date)[:\s]*(\d{1,2}\.\d{1,2}\.\d{2,4})/i, "%d.%m.%Y"],
+      [ /(?:date|purchase date|invoice date|order date)[:\s]*(\d{1,2}\.\d{1,2}\.\d{2,4})/i, "%d.%m.%Y" ],
       # Written format: January 15, 2024
-      [/(?:date|purchase date|invoice date|order date)[:\s]*([A-Z][a-z]+ \d{1,2},? \d{4})/i, "%B %d, %Y"],
+      [ /(?:date|purchase date|invoice date|order date)[:\s]*([A-Z][a-z]+ \d{1,2},? \d{4})/i, "%B %d, %Y" ],
       # Short written: 15 Jan 2024
-      [/(?:date|purchase date|invoice date|order date)[:\s]*(\d{1,2} [A-Z][a-z]+ \d{2,4})/i, "%d %b %Y"]
+      [ /(?:date|purchase date|invoice date|order date)[:\s]*(\d{1,2} [A-Z][a-z]+ \d{2,4})/i, "%d %b %Y" ]
     ]
 
     patterns.each do |pattern, format|
@@ -273,9 +273,9 @@ class InvoiceFieldParser
 
     # Fallback: find any date-like pattern
     date_patterns = [
-      [/\b(\d{4}-\d{2}-\d{2})\b/, "%Y-%m-%d"],
-      [/\b(\d{1,2}\/\d{1,2}\/\d{2,4})\b/, "%m/%d/%Y"],
-      [/\b(\d{1,2}\.\d{1,2}\.\d{2,4})\b/, "%d.%m.%Y"]
+      [ /\b(\d{4}-\d{2}-\d{2})\b/, "%Y-%m-%d" ],
+      [ /\b(\d{1,2}\/\d{1,2}\/\d{2,4})\b/, "%m/%d/%Y" ],
+      [ /\b(\d{1,2}\.\d{1,2}\.\d{2,4})\b/, "%d.%m.%Y" ]
     ]
 
     date_patterns.each do |pattern, format|
@@ -334,15 +334,15 @@ class InvoiceFieldParser
     patterns.each do |pattern|
       text.scan(pattern).each { |m| details << m.strip }
     end
-    
+
     return [] if details.empty?
 
     # Return structured format compatible with scanner
-    [{
+    [ {
       "component" => "product",
       "duration_months" => extract_warranty_period,
       "description" => details.uniq.join(" | ")
-    }]
+    } ]
   end
 
   # Extract category based on product/brand
@@ -378,11 +378,11 @@ class InvoiceFieldParser
     return false if line.blank?
     line = line.strip
     return false if line.length < 3
-    
+
     # If it's strictly a date or price, it's not a product name line
     return false if looks_like_date?(line)
     return false if line.match?(/^[\d,.]+%?\s*$/) # just numbers/percent
-    
+
     # Should have some letters
     line.match?(/[a-zA-Z]/) && !looks_like_address?(line) && !looks_like_charge?(line)
   end
@@ -403,12 +403,12 @@ class InvoiceFieldParser
       goods carriage vehicle transport commencement forward charge reverse
       declaration terms conditions e.& o.e e.&o.e geeta chowk
     ]
-    
+
     down_str = str.downcase
     # High confidence address lines
     return true if down_str.match?(/\d+\s+[a-z]+\s+(road|street|st|ave|ave|lane|ln|ln|colony|complex)/i)
     return true if down_str.match?(/pincode[:\s]*\d{6}/i)
-    
+
     # If the line contains at least a few address keywords, it's likely an address
     count = keywords.count { |kw| down_str.include?(kw) }
     count >= 2

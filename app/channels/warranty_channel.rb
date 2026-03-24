@@ -13,21 +13,21 @@ class WarrantyChannel < ApplicationCable::Channel
 
   # Handle warranty status updates
   def warranty_status_update(data)
-    warranty_id = data['warranty_id']
-    status = data['status']
-    
+    warranty_id = data["warranty_id"]
+    status = data["status"]
+
     if warranty_id.present? && status.present?
       # Broadcast warranty status update
       ActionCable.server.broadcast(
         "user_#{current_user.id}_warranties",
         {
-          type: 'warranty_status_update',
+          type: "warranty_status_update",
           warranty_id: warranty_id,
           status: status,
           timestamp: Time.current.iso8601
         }
       )
-      
+
       Rails.logger.info "[WarrantyChannel] Warranty #{warranty_id} status updated to #{status}"
     end
   end
@@ -39,7 +39,7 @@ class WarrantyChannel < ApplicationCable::Channel
     ActionCable.server.broadcast(
       "user_#{current_user.id}_warranties",
       {
-        type: 'warranty_expiry_alert',
+        type: "warranty_expiry_alert",
         warranty: {
           id: warranty.id,
           product_name: warranty.invoice.product_name,
@@ -60,7 +60,7 @@ class WarrantyChannel < ApplicationCable::Channel
     ActionCable.server.broadcast(
       "user_#{current_user.id}_warranties",
       {
-        type: 'warranty_created',
+        type: "warranty_created",
         warranty: {
           id: warranty.id,
           product_name: warranty.invoice.product_name,
@@ -78,13 +78,13 @@ class WarrantyChannel < ApplicationCable::Channel
   def calculate_urgency(days_remaining)
     case days_remaining
     when 0..7
-      'critical'
+      "critical"
     when 8..30
-      'warning'
+      "warning"
     when 31..90
-      'info'
+      "info"
     else
-      'low'
+      "low"
     end
   end
 end

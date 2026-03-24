@@ -18,13 +18,13 @@ class FileCleanupJob < ApplicationJob
   private
 
   def clean_temp_files
-    temp_dir = Rails.root.join('tmp', 'uploads')
+    temp_dir = Rails.root.join("tmp", "uploads")
     return unless Dir.exist?(temp_dir)
 
     # Find files older than 24 hours
     cutoff_time = 24.hours.ago
 
-    Dir.glob(File.join(temp_dir, '**', '*')).each do |file|
+    Dir.glob(File.join(temp_dir, "**", "*")).each do |file|
       next if File.directory?(file)
 
       if File.mtime(file) < cutoff_time

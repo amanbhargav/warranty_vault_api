@@ -25,15 +25,15 @@ module Authentication
       payload = JwtService.decode(token)
       if payload && payload[:user_id]
         @current_user = User.find_by(id: payload[:user_id])
-        
+
         # Check if user's email is verified
         if @current_user.present? && !@current_user.can_login?
-          render json: { 
-            error: "Email not verified. Please check your email and verify your account before logging in." 
+          render json: {
+            error: "Email not verified. Please check your email and verify your account before logging in."
           }, status: :unauthorized
           return
         end
-        
+
         return if @current_user.present?
       end
     end

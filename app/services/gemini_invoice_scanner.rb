@@ -49,7 +49,7 @@ class GeminiInvoiceScanner
     # Post-processing validation and fallbacks
     if result[:success]
       result = post_process_and_validate(result, raw_text)
-      
+
       # Update invoice with extracted data
       update_invoice_with_extracted_data(result[:data], raw_text)
       Rails.logger.info "[GeminiInvoiceScanner] Successfully processed invoice #{@invoice.id}"
@@ -73,7 +73,7 @@ class GeminiInvoiceScanner
 
   # Build Gemini client
   def build_client
-    # google-genai is manually loaded in config/initializers/google_genai.rb 
+    # google-genai is manually loaded in config/initializers/google_genai.rb
     # to avoid a Zeitwerk naming conflict in the gem's own loader.
 
     api_key = ENV.fetch("GEMINI_API_KEY", nil)
@@ -111,7 +111,7 @@ class GeminiInvoiceScanner
   # Extract text from PDF
   def extract_text_from_pdf
     require "pdf/reader"
-    
+
     file_path = download_file
     reader = PDF::Reader.new(file_path)
     text = reader.pages.map(&:text).join("\n")
@@ -160,14 +160,14 @@ class GeminiInvoiceScanner
   # Extract structured data with Gemini - ENHANCED PROMPT
   def extract_structured_data_with_gemini(raw_text)
     prompt = build_enhanced_gemini_prompt(raw_text)
-    
+
     Rails.logger.info "[GeminiInvoiceScanner] Sending to Gemini with enhanced prompt"
-    
+
     result = make_gemini_request(prompt)
-    
+
     if result[:success]
       parsed_data = parse_gemini_response(result[:response_text])
-      
+
       if parsed_data[:success]
         # Log AI response for debugging
         Rails.logger.info "[GeminiInvoiceScanner] AI RESPONSE:"
@@ -175,7 +175,7 @@ class GeminiInvoiceScanner
         Rails.logger.info "[GeminiInvoiceScanner] PARSED DATA:"
         Rails.logger.info parsed_data[:data].inspect
       end
-      
+
       parsed_data
     else
       result
@@ -187,7 +187,7 @@ class GeminiInvoiceScanner
     Timeout.timeout(TIMEOUT) do
       response = @client.models.generate_content(
         model: MODEL,
-        contents: [prompt],
+        contents: [ prompt ],
         config: {
           temperature: TEMPERATURE,
           maxOutputTokens: MAX_TOKENS,
@@ -360,13 +360,13 @@ class GeminiInvoiceScanner
 
     # Clean response - remove markdown code blocks if present
     clean_response = response_text.gsub(/```json\s*/, "").gsub(/```\s*/, "").strip
-    
+
     # Parse JSON
     data = JSON.parse(clean_response)
-    
+
     # Validate required fields
     validation_result = validate_extracted_data(data)
-    
+
     if validation_result[:success]
       { success: true, data: data }
     else
@@ -384,27 +384,27 @@ class GeminiInvoiceScanner
   # Validate extracted data
   def validate_extracted_data(data)
     errors = []
-    
+
     # Check warranty_details
     if data["warranty_details"].blank? || !data["warranty_details"].is_a?(Array)
       errors << "warranty_details must be a non-empty array"
     elsif data["warranty_details"].any? { |w| !w.is_a?(Hash) }
       errors << "warranty_details must contain hash objects"
     end
-    
+
     # Check model_number (critical - never blank)
     if data["model_number"].blank?
       errors << "model_number cannot be blank"
     end
-    
+
     # Check product_name
     if data["product_name"].blank?
       errors << "product_name is required"
     end
-    
+
     if errors.any?
       Rails.logger.warn "[GeminiInvoiceScanner] Validation errors: #{errors.join(', ')}"
-      { success: false, error: errors.join(', ') }
+      { success: false, error: errors.join(", ") }
     else
       { success: true }
     end
@@ -413,98 +413,98 @@ class GeminiInvoiceScanner
   # Post-process and validate extracted data with fallbacks
   def post_process_and_validate(result, raw_text)
     data = result[:data]
-    
+
     Rails.logger.info "[GeminiInvoiceScanner] Starting post-processing validation"
-    
+
     # FALLBACK 1: Model number from product_name
     if data["model_number"].blank? && data["product_name"].present?
       data["model_number"] = data["product_name"]
       Rails.logger.info "[GeminiInvoiceScanner] Fallback: Set model_number = product_name"
     end
-    
+
     # FALLBACK 2: Model number default
     if data["model_number"].blank?
       data["model_number"] = "UNKNOWN-MODEL"
       Rails.logger.info "[GeminiInvoiceScanner] Fallback: Set model_number to UNKNOWN-MODEL"
     end
-    
+
     # FALLBACK 3: Warranty extraction with regex if AI failed
     if data["warranty_details"].blank? || data["warranty_details"].empty?
       Rails.logger.info "[GeminiInvoiceScanner] No warranties from AI, trying regex fallback"
       regex_warranties = extract_warranties_with_regex(raw_text)
-      
+
       if regex_warranties.any?
         data["warranty_details"] = regex_warranties
         Rails.logger.info "[GeminiInvoiceScanner] Regex fallback extracted #{regex_warranties.count} warranties"
       end
     end
-    
+
     # FALLBACK 4: Ensure at least one warranty if mentioned in text
     if (data["warranty_details"].blank? || data["warranty_details"].empty?) && raw_text.match?(/warranty|guarantee|yr\s+warranty|year\s+warranty/i)
       Rails.logger.info "[GeminiInvoiceScanner] Warranty mentioned but not extracted, adding default"
-      data["warranty_details"] = [{ "component" => "product", "duration_months" => 12 }]
+      data["warranty_details"] = [ { "component" => "product", "duration_months" => 12 } ]
     end
-    
+
     # Validate final data
     validation = validate_extracted_data(data)
-    
+
     result[:data] = data
     result[:post_processed] = true
     result[:validation] = validation
-    
+
     Rails.logger.info "[GeminiInvoiceScanner] Post-processing complete"
     Rails.logger.info "[GeminiInvoiceScanner] Final data: #{data.inspect}"
-    
+
     result
   end
 
   # Extract warranties using regex patterns (fallback when AI fails)
   def extract_warranties_with_regex(text)
     warranties = []
-    
+
     # Pattern 1: "X year(s) warranty" or "X months warranty"
     text.scan(/(\d+)\s*(year|yr|years|month|months)\s*(?:warranty|guarantee)/i) do |match|
       value = match[0].to_i
       unit = match[1].downcase
-      duration = unit.start_with?('y') ? value * 12 : value
+      duration = unit.start_with?("y") ? value * 12 : value
       warranties << { "component" => "product", "duration_months" => duration }
     end
-    
+
     # Pattern 2: "X year(s) on [component]"
     text.scan(/(\d+)\s*(year|yr|years|month|months)\s*(?:warranty|guarantee)?\s*(?:on|for)\s+(\w+)/i) do |match|
       value = match[0].to_i
       unit = match[1].downcase
       component = match[2].downcase
-      duration = unit.start_with?('y') ? value * 12 : value
+      duration = unit.start_with?("y") ? value * 12 : value
       warranties << { "component" => component, "duration_months" => duration }
     end
-    
+
     # Pattern 3: "X year(s) [component] warranty"
     text.scan(/(\d+)\s*(year|yr|years|month|months)\s+(\w+)\s*warranty/i) do |match|
       value = match[0].to_i
       unit = match[1].downcase
       component = match[2].downcase
-      duration = unit.start_with?('y') ? value * 12 : value
+      duration = unit.start_with?("y") ? value * 12 : value
       warranties << { "component" => component, "duration_months" => duration }
     end
-    
+
     # Pattern 4: "compressor warranty - X years"
     text.scan(/(\w+)\s*warranty\s*[-:]\s*(\d+)\s*(year|yr|years|month|months)/i) do |match|
       component = match[0].downcase
       value = match[1].to_i
       unit = match[2].downcase
-      duration = unit.start_with?('y') ? value * 12 : value
+      duration = unit.start_with?("y") ? value * 12 : value
       warranties << { "component" => component, "duration_months" => duration }
     end
-    
+
     # Remove duplicates and ensure at least one warranty
-    warranties = warranties.uniq { |w| [w["component"], w["duration_months"]] }
-    
+    warranties = warranties.uniq { |w| [ w["component"], w["duration_months"] ] }
+
     # If no specific component warranties but general warranty mentioned, add product warranty
     if warranties.empty? && text.match?(/warranty|guarantee/i)
       warranties << { "component" => "product", "duration_months" => 12 }
     end
-    
+
     warranties
   end
 
@@ -542,10 +542,10 @@ class GeminiInvoiceScanner
 
     # Create warranty records
     create_warranty_records(data["warranty_details"]) if data["warranty_details"].present?
-    
+
     # Schedule reminder jobs
     schedule_reminder_jobs
-    
+
     # Schedule product image fetch
     schedule_product_image_fetch
 
@@ -561,14 +561,14 @@ class GeminiInvoiceScanner
 
     warranty_details.each do |warranty|
       next unless warranty.is_a?(Hash)
-      
+
       component = warranty["component"] || "product"
       duration_months = warranty["duration_months"] || 0
       next if duration_months.zero?
 
       # Calculate expiry date
       expires_at = @invoice.purchase_date + duration_months.months
-      
+
       # Validate expiry date
       if expires_at.year < 2020 || expires_at.year > Date.current.year + 50
         Rails.logger.warn "[GeminiInvoiceScanner] Invalid expiry year #{expires_at.year} for #{component} warranty"
@@ -581,7 +581,7 @@ class GeminiInvoiceScanner
         warranty_months: duration_months,
         expires_at: expires_at
       )
-      
+
       Rails.logger.info "[GeminiInvoiceScanner] Created #{component} warranty: #{duration_months} months, expires #{expires_at}"
     end
   end
@@ -608,7 +608,7 @@ class GeminiInvoiceScanner
     ]
 
     original_str = date_str.to_s.strip
-    
+
     formats.each do |format|
       begin
         parsed_date = Date.strptime(original_str, format)
@@ -624,7 +624,7 @@ class GeminiInvoiceScanner
     rescue ArgumentError
       Rails.logger.warn "[GeminiInvoiceScanner] Failed to parse date: #{original_str}"
     end
-    
+
     nil
   end
 end

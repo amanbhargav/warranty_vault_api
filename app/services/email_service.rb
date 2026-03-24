@@ -78,10 +78,10 @@ class EmailService
     # Handle email delivery failures
     def handle_delivery_failure(email, error)
       Rails.logger.error "[EmailService] Email delivery failed for #{email}: #{error}"
-      
+
       # Log to monitoring system
       # Could integrate with services like Sentry, Rollbar, etc.
-      
+
       # Optionally notify admin
       # AdminMailer.delivery_failure_notification(email, error).deliver_later
     end

@@ -32,13 +32,13 @@ class WarrantyReminderJob < ApplicationJob
     return unless user&.email_verified?
 
     # Create in-app notification
-    NotificationService.create_warranty_expiry_notification(user, [warranty])
+    NotificationService.create_warranty_expiry_notification(user, [ warranty ])
 
     # Broadcast real-time update
     WarrantyBroadcastService.broadcast_warranty_expiry_alert(warranty)
 
     # Send email notification
-    if EmailService.send_warranty_notification(user, [warranty])
+    if EmailService.send_warranty_notification(user, [ warranty ])
       warranty.update!(reminder_sent: true)
       Rails.logger.info "[WarrantyReminderJob] Reminder sent for warranty #{warranty_id}"
     else

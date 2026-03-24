@@ -32,7 +32,7 @@ class HourlyAppReminderJob < ApplicationJob
   # Find users who need reminders (haven't received one in the last 24 hours)
   def find_users_needing_reminders
     User.where(
-      'last_app_reminder_sent_at IS NULL OR last_app_reminder_sent_at < ?',
+      "last_app_reminder_sent_at IS NULL OR last_app_reminder_sent_at < ?",
       REMINDER_INTERVAL.ago
     ).where(email_verified: true)
   end

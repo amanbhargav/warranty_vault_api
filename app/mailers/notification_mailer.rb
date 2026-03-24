@@ -1,19 +1,19 @@
 # frozen_string_literal: true
 
 class NotificationMailer < ApplicationMailer
-  default from: ENV.fetch('SMTP_FROM', 'Warranty Vault <noreply@warrantyvault.com>')
+  default from: ENV.fetch("SMTP_FROM", "Warranty Vault <noreply@warrantyvault.com>")
 
   # Send daily reminder email
   def daily_reminder(user)
     @user = user
     @dashboard_url = dashboard_url
     @upload_url = upload_url
-    
+
     # Get user's warranty statistics
     @active_warranties = user.invoices.where(warranty_status: :active).count
     @expiring_soon = user.invoices.where(warranty_status: :expiring_soon).count
     @expired = user.invoices.where(warranty_status: :expired).count
-    
+
     mail(
       to: user.email,
       subject: "Daily Warranty Check - #{Date.current.strftime('%B %d, %Y')}"
@@ -25,7 +25,7 @@ class NotificationMailer < ApplicationMailer
     @user = user
     @warranties = warranties
     @dashboard_url = dashboard_url
-    
+
     mail(
       to: user.email,
       subject: "Warranty Expiry Reminder - #{warranties.count} Item#{warranties.count > 1 ? 's' : ''} Expiring Soon"
@@ -37,10 +37,10 @@ class NotificationMailer < ApplicationMailer
     @user = user
     @dashboard_url = dashboard_url
     @upload_url = upload_url
-    
+
     mail(
       to: user.email,
-      subject: 'Welcome to Warranty Vault!'
+      subject: "Welcome to Warranty Vault!"
     )
   end
 

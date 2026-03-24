@@ -54,12 +54,12 @@ Rails.application.configure do
   config.action_mailer.raise_delivery_errors = true
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { 
+  config.action_mailer.default_url_options = {
     host: ENV.fetch("APP_HOST", "example.com"),
-    protocol: 'https'
+    protocol: "https"
   }
-  Rails.application.routes.default_url_options = { 
-    host: ENV.fetch("APP_URL", "https://example.com") 
+  Rails.application.routes.default_url_options = {
+    host: ENV.fetch("APP_URL", "https://example.com")
   }
 
   # Production email configuration

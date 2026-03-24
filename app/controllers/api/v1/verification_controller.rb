@@ -3,7 +3,7 @@
 module Api
   module V1
     class VerificationController < ApplicationController
-      skip_before_action :authenticate_user!, only: [:verify_email, :verify_email_page, :resend_verification]
+      skip_before_action :authenticate_user!, only: [ :verify_email, :verify_email_page, :resend_verification ]
 
       private
 
@@ -22,22 +22,22 @@ module Api
       # GET /api/v1/verify_email?token=xxxxx (for email links)
       def verify_email_page
         token = params[:token]
-        
+
         if token.blank?
-          return render json: { 
-            error: "Verification token is required" 
+          return render json: {
+            error: "Verification token is required"
           }, status: :bad_request
         end
 
         result = VerificationService.verify_token(token)
-        
+
         if result[:success]
           user = result[:user]
-          
+
           # Auto-login the user
           token = user.generate_jwt
           set_auth_cookie(token)
-          
+
           # Redirect directly to dashboard
           redirect_url = "#{frontend_url}/dashboard?token=#{token}&verified=true"
           redirect_to redirect_url, allow_other_host: true
@@ -55,65 +55,65 @@ module Api
       # POST /api/v1/verify_email
       def verify_email
         token = params[:token]
-        
+
         if token.blank?
-          return render json: { 
-            error: "Verification token is required" 
+          return render json: {
+            error: "Verification token is required"
           }, status: :bad_request
         end
 
         result = VerificationService.verify_token(token)
-        
+
         if result[:success]
-          render json: { 
-            success: true, 
-            message: "Email verified successfully! You can now log in." 
+          render json: {
+            success: true,
+            message: "Email verified successfully! You can now log in."
           }
         else
-          render json: { 
-            error: result[:error] 
+          render json: {
+            error: result[:error]
           }, status: :unprocessable_entity
         end
       rescue => e
         Rails.logger.error "[VerificationController] Error verifying email: #{e.message}"
-        render json: { 
-          error: "Verification failed. Please try again." 
+        render json: {
+          error: "Verification failed. Please try again."
         }, status: :internal_server_error
       end
 
       # POST /api/v1/resend_verification
       def resend_verification
         email = params[:email]
-        
+
         if email.blank?
-          return render json: { 
-            error: "Email is required" 
+          return render json: {
+            error: "Email is required"
           }, status: :bad_request
         end
 
         result = VerificationService.resend_verification(email)
-        
+
         if result[:success]
-          render json: { 
-            success: true, 
-            message: result[:message] 
+          render json: {
+            success: true,
+            message: result[:message]
           }
         else
-          render json: { 
-            error: result[:error] 
+          render json: {
+            error: result[:error]
           }, status: :unprocessable_entity
         end
       rescue => e
         Rails.logger.error "[VerificationController] Error resending verification: #{e.message}"
-        render json: { 
-          error: "Failed to resend verification email. Please try again." 
+        render json: {
+          error: "Failed to resend verification email. Please try again."
         }, status: :internal_server_error
       end
 
       # GET /api/v1/verification_status
       def verification_status
         status = VerificationService.verification_status(current_user)
-        
+
         render json: {
           email_verified: status[:verified],
           needs_verification: status[:needs_verification],
@@ -123,8 +123,8 @@ module Api
         }
       rescue => e
         Rails.logger.error "[VerificationController] Error getting verification status: #{e.message}"
-        render json: { 
-          error: "Failed to get verification status" 
+        render json: {
+          error: "Failed to get verification status"
         }, status: :internal_server_error
       end
     end

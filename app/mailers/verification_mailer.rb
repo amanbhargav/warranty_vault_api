@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class VerificationMailer < ApplicationMailer
-  default from: ENV.fetch('SMTP_FROM', 'Warranty Vault <noreply@warrantyvault.com>')
+  default from: ENV.fetch("SMTP_FROM", "Warranty Vault <noreply@warrantyvault.com>")
 
   # Send email verification
   def verification_email(user, token = nil)
@@ -9,10 +9,10 @@ class VerificationMailer < ApplicationMailer
     # Use the provided token or get a fresh one
     @verification_token = token || VerificationService.generate_verification_token(user)
     @verification_url = verification_token_url(@verification_token)
-    
+
     mail(
       to: user.email,
-      subject: 'Verify Your Warranty Vault Account'
+      subject: "Verify Your Warranty Vault Account"
     )
   end
 
@@ -20,10 +20,10 @@ class VerificationMailer < ApplicationMailer
   def password_reset_email(user)
     @user = user
     @reset_url = password_reset_url(user.reset_token)
-    
+
     mail(
       to: user.email,
-      subject: 'Reset Your Warranty Vault Password'
+      subject: "Reset Your Warranty Vault Password"
     )
   end
 

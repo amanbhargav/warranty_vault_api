@@ -211,43 +211,43 @@ class OpenAiInvoiceScanner
 
     # Extract store information
     store_info = data["store_info"] || {}
-    
+
     # Extract first item (primary product)
     item = data["items"]&.first || {}
-    
+
     # Prepare comprehensive update data
     update_data = {
       # Basic product info
       product_name: item["product_name"],
       brand: item["brand"],
       model_number: item["model_number"],
-      
+
       # Store information
       seller: store_info["name"],
       store_address: store_info["address"],
       store_phone: store_info["phone"],
       store_gstin: store_info["gstin"],
       invoice_number: store_info["invoice_number"],
-      
+
       # Pricing information
       amount: item["total_amount"] || item["unit_price"],
       mrp: item["mrp"],
       discount: item["discount"],
       gst_percentage: item["gst_percentage"],
       gst_amount: item["gst_amount"],
-      
+
       # Purchase details
       purchase_date: parse_date(item["purchase_date"] || store_info["invoice_date"]),
       invoice_date: parse_date(store_info["invoice_date"]),
       invoice_time: store_info["invoice_time"],
-      
+
       # Product specifications
       color: item["color"],
       specifications: item["specifications"],
       part_number: item["part_number"],
       serial_number: item["serial_number"],
       category: item["category"],
-      
+
       # Warranty and status
       warranty_duration: calculate_total_warranty_duration(data["warranty_details"]),
       ocr_data: data.merge(raw_text: raw_text).to_json,
@@ -275,7 +275,7 @@ class OpenAiInvoiceScanner
   # Schedule product image fetch job
   def schedule_product_image_fetch
     return unless @invoice.persisted?
-    
+
     # Schedule image fetch to run after OCR completion
     # Product image fetching is now handled synchronously in InvoiceOcrJob
     Rails.logger.info "[OpenAiInvoiceScanner] Scheduled product image fetch for invoice #{@invoice.id}"
@@ -295,10 +295,10 @@ class OpenAiInvoiceScanner
     warranty_details.each_with_index do |warranty, index|
       # Calculate duration in months
       duration_months = warranty["duration_months"] || (warranty["duration_years"] * 12)
-      
+
       # Calculate expiry date
       expiry_date = purchase_date + duration_months.months
-      
+
       # Create warranty record
       ProductWarranty.create!(
         invoice: @invoice,
@@ -308,7 +308,7 @@ class OpenAiInvoiceScanner
         description: warranty["description"],
         warranty_type: warranty["component"] == "product" ? "standard" : "extended"
       )
-      
+
       Rails.logger.info "[OpenAiInvoiceScanner] Created #{warranty['component']} warranty: #{duration_months} months, expires #{expiry_date}"
     end
   end
@@ -333,7 +333,7 @@ class OpenAiInvoiceScanner
       customer_service: additional_info["customer_service"],
       terms: additional_info["terms"]
     }.compact
-    
+
     if metadata.any?
       @invoice.update_column(:metadata, metadata.to_json)
       Rails.logger.info "[OpenAiInvoiceScanner] Stored additional info: #{metadata.keys.join(', ')}"
@@ -369,7 +369,7 @@ class OpenAiInvoiceScanner
     return nil unless date_str.present?
 
     # Try common formats
-    formats = ["%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%B %d, %Y", "%d %B %Y", "%b %d, %Y"]
+    formats = [ "%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%B %d, %Y", "%d %B %Y", "%b %d, %Y" ]
 
     formats.each do |format|
       begin
@@ -385,7 +385,7 @@ class OpenAiInvoiceScanner
 
   # Download file to temp location
   def download_file
-    file = Tempfile.new(["invoice_", ".#{@invoice.file.filename.extension}"])
+    file = Tempfile.new([ "invoice_", ".#{@invoice.file.filename.extension}" ])
     file.binmode
     file.write(@invoice.file.blob.download)
     file.close
@@ -402,31 +402,31 @@ class OpenAiInvoiceScanner
     You are an expert invoice data extraction AI. Extract ALL product and warranty details from this invoice.
 
     CRITICAL: Extract EVERY piece of information visible in the invoice including:
-    
+
     1. STORE INFORMATION:
     - Store name, address, phone, GSTIN/TAX ID
     - Invoice number, date, time
-    
+
     2. PRODUCT DETAILS (for each product):
     - Complete product name (exact as shown)
     - Brand/Manufacturer
     - Model number, part number, serial number
     - Color, size, specifications
     - Category (electronics/appliances/furniture/tools/sports/automotive/clothing/general)
-    
+
     3. PRICING INFORMATION:
     - MRP/List price
     - Discount amount
     - Net amount/unit price
     - GST/VAT tax amounts and percentages
     - Total amount paid
-    
+
     4. WARRANTY INFORMATION:
     - Standard warranty duration (in years/months)
     - Extended warranty details (compressor, battery, motor, etc.)
     - Total warranty coverage period
     - Warranty terms and conditions
-    
+
     5. PURCHASE DETAILS:
     - Purchase date (DD/MM/YYYY format)
     - Payment method

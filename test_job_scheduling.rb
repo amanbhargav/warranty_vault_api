@@ -38,7 +38,7 @@ else
   # Check if it was sent immediately (if reminder_date <= now)
   rs = Sidekiq::Queue.new("default")
   job = rs.find { |j| j.args.first["arguments"].first == warranty.id }
-  
+
   if job
     puts "SUCCESS: WarrantyReminderJob found in Sidekiq Default Queue (Immediate)!"
   else

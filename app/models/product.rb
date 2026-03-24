@@ -37,12 +37,12 @@ class Product < ApplicationRecord
 
   # Get formatted product name with brand
   def full_name
-    [brand, name].compact.join(" ")
+    [ brand, name ].compact.join(" ")
   end
 
   # Get display name (includes model number if available)
   def display_name
-    parts = [brand, name, model_number].compact
+    parts = [ brand, name, model_number ].compact
     parts.join(" ")
   end
 

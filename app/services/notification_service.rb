@@ -12,7 +12,7 @@ class NotificationService
       notification = user.notifications.create!(
         title: title,
         message: message,
-        notification_type: options[:type] || 'info',
+        notification_type: options[:type] || "info",
         action_url: options[:action_url],
         metadata: options[:metadata] || {}
       )
@@ -32,16 +32,16 @@ class NotificationService
       warranty_count = warranties.length
       title = "Warranty Expiring Soon"
       message = "#{warranty_count} product#{warranty_count > 1 ? 's' : ''} expiring in the next 30 days"
-      
+
       notification = create_notification(
         user,
         title,
         message,
-        type: 'warranty_expiring',
-        action_url: '/dashboard',
+        type: "warranty_expiring",
+        action_url: "/dashboard",
         metadata: {
           warranty_ids: warranties.map(&:id),
-          expiry_dates: warranties.map { |w| [w.id, w.expires_at] }.to_h
+          expiry_dates: warranties.map { |w| [ w.id, w.expires_at ] }.to_h
         }
       )
 
@@ -57,12 +57,12 @@ class NotificationService
 
       title = "Invoice Processed"
       message = "Your invoice for #{invoice.product_name || 'uploaded file'} has been processed"
-      
+
       create_notification(
         user,
         title,
         message,
-        type: 'invoice_processed',
+        type: "invoice_processed",
         action_url: "/invoice/#{invoice.id}",
         metadata: {
           invoice_id: invoice.id,
@@ -78,7 +78,7 @@ class NotificationService
           user,
           title,
           message,
-          type: 'system_update',
+          type: "system_update",
           metadata: options[:metadata] || {}
         )
       end
@@ -90,8 +90,8 @@ class NotificationService
         user,
         "Login Successful",
         "Welcome back! We are here to keep your expensive product invoices and track warranties.",
-        type: 'success',
-        action_url: '/dashboard'
+        type: "success",
+        action_url: "/dashboard"
       )
     end
 
@@ -102,17 +102,17 @@ class NotificationService
       # Handle both Product and Invoice objects
       product_name = if product_or_invoice.respond_to?(:name)
                        product_or_invoice.name
-                     elsif product_or_invoice.respond_to?(:product_name)
+      elsif product_or_invoice.respond_to?(:product_name)
                        product_or_invoice.product_name
-                     else
-                       'New product'
-                     end
+      else
+                       "New product"
+      end
 
       create_notification(
         user,
         "Product Added Successfully",
         "#{product_name} has been added to your warranty vault.",
-        type: 'success',
+        type: "success",
         action_url: if product_or_invoice.respond_to?(:id)
                       "/invoices/#{product_or_invoice.id}"
                     else
@@ -132,15 +132,15 @@ class NotificationService
 
       title = "Warranty Vault Reminder"
       message = "We are here to keep your expensive product invoice and track warranty"
-      
+
       create_notification(
         user,
         title,
         message,
-        type: 'info',
-        action_url: '/dashboard',
+        type: "info",
+        action_url: "/dashboard",
         metadata: {
-          reminder_type: 'app_reminder',
+          reminder_type: "app_reminder",
           sent_at: Time.current
         }
       )
@@ -152,18 +152,18 @@ class NotificationService
       return { success: false, error: "Notification not found" } unless notification
 
       notification.update!(read: true)
-      
+
       Rails.logger.info "[NotificationService] Marked notification #{notification_id} as read for user #{user.id}"
-      
+
       { success: true, notification: notification }
     end
 
     # Mark all notifications as read for user
     def mark_all_as_read(user)
       count = user.notifications.where(read: false).update_all(read: true)
-      
+
       Rails.logger.info "[NotificationService] Marked #{count} notifications as read for user #{user.id}"
-      
+
       { success: true, count: count }
     end
 
@@ -182,10 +182,10 @@ class NotificationService
       notifications = user.notifications.includes(:user)
       notifications = notifications.where(read: false) if unread_only
       notifications = notifications.where(notification_type: type) if type
-      
+
       total_count = notifications.count
       total_pages = (total_count.to_f / per_page.to_i).ceil
-      
+
       paginated_notifications = notifications.order(created_at: :desc)
                                              .offset((page.to_i - 1) * per_page.to_i)
                                              .limit(per_page.to_i)
@@ -208,17 +208,17 @@ class NotificationService
       return { success: false, error: "Notification not found" } unless notification
 
       notification.destroy!
-      
+
       Rails.logger.info "[NotificationService] Deleted notification #{notification_id} for user #{user.id}"
-      
+
       { success: true }
     end
 
     # Clean up old notifications (older than 30 days)
     def cleanup_old_notifications(days = 30)
       cutoff_date = days.days.ago
-      count = Notification.where('created_at < ?', cutoff_date).delete_all
-      
+      count = Notification.where("created_at < ?", cutoff_date).delete_all
+
       Rails.logger.info "[NotificationService] Cleaned up #{count} old notifications"
       count
     end
@@ -229,7 +229,7 @@ class NotificationService
     def should_broadcast?(options)
       # Don't broadcast for bulk notifications
       return false if options[:broadcast] == false
-      
+
       # Always broadcast for individual user notifications
       true
     end
@@ -242,7 +242,7 @@ class NotificationService
         ActionCable.server.broadcast(
           "user_#{notification.user_id}_notifications",
           {
-            type: 'new_notification',
+            type: "new_notification",
             notification: notification.serialize,
             unread_count: unread_count(notification.user),
             timestamp: Time.current.iso8601

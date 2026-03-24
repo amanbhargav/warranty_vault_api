@@ -311,10 +311,10 @@ class SupportInfoFetcher
       phone: existing[:phone] || new[:phone],
       email: existing[:email] || new[:email],
       website: existing[:website] || new[:website],
-      info: [existing[:info], new[:info]].compact.join(" | "),
+      info: [ existing[:info], new[:info] ].compact.join(" | "),
       contact_info: (existing[:contact_info] || {}).merge(new[:contact_info] || {}),
-      confidence: [existing[:confidence], new[:confidence]].compact.max,
-      sources: [existing[:source], new[:source]].compact.uniq
+      confidence: [ existing[:confidence], new[:confidence] ].compact.max,
+      sources: [ existing[:source], new[:source] ].compact.uniq
     }.compact
   end
 

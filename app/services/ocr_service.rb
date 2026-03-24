@@ -149,7 +149,7 @@ class OcrService
 
   # Download file to temp location
   def download_file
-    file = Tempfile.new(["invoice_", ".#{@file.filename.extension}"])
+    file = Tempfile.new([ "invoice_", ".#{@file.filename.extension}" ])
     file.binmode
     file.write(@file.blob.download)
     file.close
@@ -158,14 +158,14 @@ class OcrService
 
   # Check if Google credentials are available
   def google_credentials_available?
-    ENV['GOOGLE_PROJECT_ID'].present? && ENV['GOOGLE_APPLICATION_CREDENTIALS'].present?
+    ENV["GOOGLE_PROJECT_ID"].present? && ENV["GOOGLE_APPLICATION_CREDENTIALS"].present?
   end
 
   # Simulate OCR extraction for development without Google credentials
   def simulate_ocr_extraction
     # Simulate extracted text based on filename
     filename = @file.original_filename.to_s.downcase
-    
+
     case filename
     when /invoice|receipt/
       "INVOICE\n\nDate: #{Date.current.strftime('%B %d, %Y')}\nMerchant: Demo Store\nProduct: #{filename.gsub(/\.[^.]+\z/, '').humanize}\nAmount: $99.99\nWarranty: 12 months"

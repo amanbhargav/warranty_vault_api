@@ -1,7 +1,7 @@
 module Api
   module V1
     class GmailConnectionsController < ApplicationController
-      before_action :set_gmail_connection, only: [:show, :sync, :disconnect]
+      before_action :set_gmail_connection, only: [ :show, :sync, :disconnect ]
 
       # GET /api/v1/gmail/connection
       def show
@@ -47,7 +47,7 @@ module Api
 
         # Trigger sync job
         GmailImportJob.perform_later(current_user.id)
-        
+
         render json: {
           message: "Gmail sync started",
           status: "processing"
@@ -60,7 +60,7 @@ module Api
           @gmail_connection.mark_as_disconnected!
           @gmail_connection.destroy!
         end
-        
+
         render json: { message: "Gmail disconnected successfully" }
       end
 

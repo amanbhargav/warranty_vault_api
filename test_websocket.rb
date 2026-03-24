@@ -13,27 +13,27 @@ class WebSocketTester
 
   def test_connection(token)
     puts "=== WebSocket Connection Test ==="
-    
+
     # Connect to WebSocket with token
     ws_url = "#{@base_url}/cable?token=#{token}"
-    
+
     puts "Connecting to: #{ws_url}"
-    
+
     @ws = WebSocket::Client::Simple.connect(ws_url)
-    
+
     setup_handlers
     subscribe_to_channels
-    
+
     # Keep connection open for testing
     sleep 2
-    
+
     # Test notification
     test_notification_creation
-    
+
     # Keep connection open to receive messages
     puts "Waiting for messages (10 seconds)..."
     sleep 10
-    
+
     cleanup
   end
 
@@ -47,7 +47,7 @@ class WebSocketTester
     @ws.on :message do |event|
       data = JSON.parse(event.data)
       puts "📨 Received: #{data['type']}"
-      
+
       case data['type']
       when 'welcome'
         puts "👋 Welcome message received"
@@ -84,10 +84,10 @@ class WebSocketTester
         channel: 'NotificationChannel'
       })
     }
-    
+
     @ws.send(JSON.generate(subscribe_command))
     puts "📢 Subscribed to NotificationChannel"
-    
+
     # Subscribe to warranty channel
     warranty_subscribe_command = {
       command: 'subscribe',
@@ -95,14 +95,14 @@ class WebSocketTester
         channel: 'WarrantyChannel'
       })
     }
-    
+
     @ws.send(JSON.generate(warranty_subscribe_command))
     puts "📢 Subscribed to WarrantyChannel"
   end
 
   def test_notification_creation
     puts "🧪 Testing notification creation..."
-    
+
     # This would normally be done via API, but for testing we'll simulate
     # In a real scenario, you'd make an API call that creates a notification
     # which would then be broadcast via WebSocket

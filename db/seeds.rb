@@ -148,7 +148,7 @@ invoices_data = [
 puts "Creating invoices for demo user..."
 invoices_data.each do |data|
   invoice = demo_user.invoices.create!(data)
-  
+
   # Create notifications for some invoices
   if invoice.warranty_status == "expiring_soon"
     Notification.create!(

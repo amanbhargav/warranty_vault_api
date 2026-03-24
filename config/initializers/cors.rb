@@ -19,10 +19,10 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
     # Allow all API resources with credentials (cookies)
     resource "*",
       headers: :any,
-      methods: [:get, :post, :put, :patch, :delete, :options, :head],
+      methods: [ :get, :post, :put, :patch, :delete, :options, :head ],
       credentials: true,
       # Expose custom headers to the browser
-      expose: ["Authorization", "X-User-Id"],
+      expose: [ "Authorization", "X-User-Id" ],
       # Allow cookies to be sent cross-origin
       max_age: 86400 # 24 hours
   end

@@ -12,14 +12,14 @@ class GmailImportJob < ApplicationJob
 
     # TODO: Implement Gmail API integration
     # This is a placeholder for the actual Gmail sync logic
-    
+
     # Steps to implement:
     # 1. Use access_token to connect to Gmail API
     # 2. Search for receipt/order confirmation emails
     # 3. Extract attachments and metadata
     # 4. Create invoice records
     # 5. Send notifications
-    
+
     # Example structure:
     # emails = GmailService.new(gmail_connection.access_token).search_receipts
     # emails.each do |email|
@@ -27,7 +27,7 @@ class GmailImportJob < ApplicationJob
     # end
 
     gmail_connection.mark_as_synced!
-    
+
     Notification.create!(
       user: user,
       title: "Gmail Import Complete",

@@ -104,28 +104,28 @@ class FastOpenAiInvoiceScanner < OpenAiInvoiceScanner
     }
     rescue StandardError => e
       Rails.logger.error "[FastOpenAiInvoiceScanner] OpenAI error: #{e.message}. Falling back to regex parser."
-      
+
       # Fallback to local regex-based parser if AI fails
       parsed_data = InvoiceFieldParser.new(raw_text).parse.with_indifferent_access
       update_invoice_with_extracted_data(parsed_data, raw_text)
-      
-      { 
-        success: true, 
-        data: parsed_data, 
-        raw_text: raw_text, 
+
+      {
+        success: true,
+        data: parsed_data,
+        raw_text: raw_text,
         fallback: true,
         error: "AI service error: #{e.message}. Used fallback parser."
       }
     rescue Timeout::Error => e
       Rails.logger.error "[FastOpenAiInvoiceScanner] OpenAI API timeout. Falling back to regex parser."
-      
+
       parsed_data = InvoiceFieldParser.new(raw_text).parse.with_indifferent_access
       update_invoice_with_extracted_data(parsed_data, raw_text)
-      
-      { 
-        success: true, 
-        data: parsed_data, 
-        raw_text: raw_text, 
+
+      {
+        success: true,
+        data: parsed_data,
+        raw_text: raw_text,
         fallback: true,
         error: "AI service timeout. Used fallback parser."
       }

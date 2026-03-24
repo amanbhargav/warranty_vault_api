@@ -134,7 +134,7 @@ class Api::V1::WarrantiesControllerTest < ActionDispatch::IntegrationTest
     )
 
     post bulk_remind_api_v1_warranties_path,
-         params: { warranty_ids: [@warranty.id, warranty2.id] },
+         params: { warranty_ids: [ @warranty.id, warranty2.id ] },
          headers: { "Authorization" => "Bearer #{@token}" }
 
     assert_response :success

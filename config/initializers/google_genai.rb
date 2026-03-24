@@ -9,7 +9,7 @@ begin
   gem_spec = Gem.loaded_specs["google-genai"]
   if gem_spec
     gem_root = gem_spec.full_gem_path
-    
+
     # Define common namespaces
     module Google
       module Genai

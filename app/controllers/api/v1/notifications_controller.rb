@@ -1,7 +1,7 @@
 module Api
   module V1
     class NotificationsController < ApplicationController
-      before_action :set_notification, only: [:show, :mark_as_read, :destroy]
+      before_action :set_notification, only: [ :show, :mark_as_read, :destroy ]
 
       # GET /api/v1/notifications
       def index
@@ -29,9 +29,9 @@ module Api
       # POST /api/v1/notifications/:id/mark_read
       def mark_as_read
         result = NotificationService.mark_as_read(@notification.id, current_user)
-        
+
         if result[:success]
-          render json: { 
+          render json: {
             notification: result[:notification].serialize,
             message: "Notification marked as read"
           }
@@ -43,9 +43,9 @@ module Api
       # POST /api/v1/notifications/mark_all_read
       def mark_all_read
         result = NotificationService.mark_all_as_read(current_user)
-        
-        render json: { 
-          success: true, 
+
+        render json: {
+          success: true,
           count: result[:count],
           message: "All notifications marked as read"
         }
@@ -54,9 +54,9 @@ module Api
       # PUT /api/v1/notifications/mark_all_as_read
       def mark_all_as_read
         result = NotificationService.mark_all_as_read(current_user)
-        
-        render json: { 
-          success: true, 
+
+        render json: {
+          success: true,
           count: result[:count],
           message: "All notifications marked as read"
         }
@@ -65,10 +65,10 @@ module Api
       # DELETE /api/v1/notifications/:id
       def destroy
         result = NotificationService.delete_notification(@notification.id, current_user)
-        
+
         if result[:success]
-          render json: { 
-            success: true, 
+          render json: {
+            success: true,
             message: "Notification deleted"
           }
         else
@@ -79,7 +79,7 @@ module Api
       # GET /api/v1/notifications/unread_count
       def unread_count
         count = NotificationService.unread_count(current_user)
-        
+
         render json: { unread_count: count }
       end
 

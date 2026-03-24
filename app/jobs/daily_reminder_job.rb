@@ -10,13 +10,13 @@ class DailyReminderJob < ApplicationJob
 
   def perform(*args)
     start_time = Time.current
-    
+
     Rails.logger.info "[DailyReminderJob] ===== STARTING DAILY REMINDERS ====="
     Rails.logger.info "[DailyReminderJob] Started at: #{start_time}"
 
     # Get all verified users
     verified_users = User.where(email_verified: true)
-    
+
     Rails.logger.info "[DailyReminderJob] Processing #{verified_users.count} verified users"
 
     success_count = 0
@@ -47,7 +47,7 @@ class DailyReminderJob < ApplicationJob
     end
 
     total_time = Time.current - start_time
-    
+
     Rails.logger.info "[DailyReminderJob] ===== DAILY REMINDERS COMPLETE ====="
     Rails.logger.info "[DailyReminderJob] Total time: #{total_time.round(2)} seconds"
     Rails.logger.info "[DailyReminderJob] Success: #{success_count}, Failures: #{failure_count}"
@@ -64,7 +64,7 @@ class DailyReminderJob < ApplicationJob
     # - Rollbar
     # - Custom monitoring dashboard
     # - Slack notifications for failures
-    
+
     if failure_count > 0
       Rails.logger.warn "[DailyReminderJob] ⚠️  #{failure_count} users failed to receive daily reminders"
     end

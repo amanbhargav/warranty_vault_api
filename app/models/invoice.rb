@@ -61,7 +61,7 @@ class Invoice < ApplicationRecord
   # Get days remaining on warranty
   def days_remaining
     return nil unless expires_at
-    [(expires_at - Date.current).to_i, 0].max
+    [ (expires_at - Date.current).to_i, 0 ].max
   end
 
   # Get formatted amount
@@ -149,7 +149,7 @@ class Invoice < ApplicationRecord
           expires_at: pw.expires_at,
           duration_months: pw.warranty_months,
           days_remaining: pw.days_remaining,
-          status: pw.active? ? 'active' : (pw.expired? ? 'expired' : 'unknown')
+          status: pw.active? ? "active" : (pw.expired? ? "expired" : "unknown")
         }
       end
     }

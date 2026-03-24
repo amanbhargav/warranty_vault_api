@@ -49,11 +49,11 @@ class CreateProducts < ActiveRecord::Migration[8.0]
     end
 
     # Indexes for efficient lookups
-    add_index :products, [:brand, :name]
+    add_index :products, [ :brand, :name ]
     add_index :products, :model_number
     add_index :products, :category
     add_index :products, :search_keywords
-    add_index :products, [:brand, :model_number], unique: true
+    add_index :products, [ :brand, :model_number ], unique: true
 
     # Add product reference to invoices (optional - for linking)
     add_reference :invoices, :product, foreign_key: true, index: true unless column_exists?(:invoices, :product_id)

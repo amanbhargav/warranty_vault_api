@@ -48,7 +48,7 @@ class ProductWarranty < ApplicationRecord
   # Get days remaining
   def days_remaining
     return nil unless expires_at
-    [(expires_at - Date.current).to_i, 0].max
+    [ (expires_at - Date.current).to_i, 0 ].max
   end
 
   # Get formatted warranty duration
